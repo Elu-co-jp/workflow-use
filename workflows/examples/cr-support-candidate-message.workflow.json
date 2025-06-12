@@ -1,0 +1,168 @@
+{
+  "workflow_analysis": "The workflow involves logging into a website 'cr-support.jp', navigating to specific sections of the site, searching for a candidate using a member ID, and sending a message via a recruitment system. The main objectives are to handle a login process, search for a specific candidate by ID, and send a scout message, likely in a recruiting context. The workflow assumes some data input, such as email, password, member ID, and possibly job parameters for searching candidates. The parts of the workflow that involve selecting candidates and sending messages are likely dynamic, with content that may change and require agentic behavior. However, key progression points such as logins and specific searches can remain deterministic.",
+  "name": "CR-Support Candidate Message Workflow",
+  "description": "This workflow logs into CR-Support, finds a candidate using a member ID, and sends a customized message to the selected candidate.",
+  "version": "1.0",
+  "steps": [
+    {
+      "description": "Navigate to the my page.",
+      "output": null,
+      "timestamp": null,
+      "tabId": null,
+      "type": "navigation",
+      "url": "https://cr-support.jp/mypage/"
+    },
+    {
+      "description": "Navigate to candidate search section.",
+      "output": null,
+      "timestamp": 1749700876029,
+      "tabId": 1852370754,
+      "type": "click",
+      "cssSelector": "span",
+      "xpath": "id(\"side-navigation-inner\")/ul[1]/li[3]/ul[1]/li[1]/a[1]/span[1]",
+      "elementTag": "SPAN",
+      "elementText": null
+    },
+    {
+      "description": "Input member ID for search.",
+      "output": null,
+      "timestamp": 1749700889487,
+      "tabId": 1852370754,
+      "type": "input",
+      "cssSelector": "input[type=\"text\"][name=\"cidStr\"][placeholder=\"\u0004b\u000e\u001fID\"]",
+      "value": "{member_id}",
+      "xpath": "id(\"jsi_search_main_block\")/section[3]/dl[7]/dd[1]/input[1]",
+      "elementTag": "INPUT"
+    },
+    {
+      "description": "Click to perform candidate search.",
+      "output": null,
+      "timestamp": 1749700892492,
+      "tabId": 1852370754,
+      "type": "click",
+      "cssSelector": "input.jsc-resume-search-button.btnAccept[type=\"button\"][name=\"search\"]",
+      "xpath": "id(\"jsi_search_main_block\")/div[1]/div[1]/input[1]",
+      "elementTag": "INPUT",
+      "elementText": null
+    },
+    {
+      "description": "Select searched candidate.",
+      "output": null,
+      "timestamp": 1749700907319,
+      "tabId": 1852370754,
+      "type": "click",
+      "cssSelector": ".jsc_row",
+      "elementTag": "DIV",
+      "elementText": null
+    },
+    {
+      "description": "Navigate to scout message screen.",
+      "output": null,
+      "timestamp": 1749700907319,
+      "tabId": 1852370754,
+      "type": "click",
+      "cssSelector": "a.btnPrimary.w140.fl[href=\"javascript:void(0);\"]",
+      "xpath": "id(\"jsi_resume_ja_block\")/div[3]/div[1]/a[1]",
+      "elementTag": "A",
+      "elementText": null
+    },
+    {
+      "description": "Input job ID.",
+      "output": null,
+      "timestamp": 1749700907319,
+      "tabId": 1852370754,
+      "type": "input",
+      "cssSelector": ".ns-modal-scout-job-selector-searcher .inputStyle",
+      "value": "4413608"
+    },
+    {
+      "description": "Click the search button.",
+      "output": null,
+      "timestamp": 1749700907319,
+      "tabId": 1852370754,
+      "type": "click",
+      "cssSelector": ".ns-modal-scout-job-selector-searcher .btnAccept"
+    },
+    {
+      "description": "Select the job.",
+      "output": null,
+      "timestamp": 1749700907319,
+      "tabId": 1852370754,
+      "type": "click",
+      "cssSelector": "#jsi_list_table_wapper .jsc_row"
+    },
+    {
+      "description": "Input message subject.",
+      "output": null,
+      "timestamp": 1749700929391,
+      "tabId": 1852370754,
+      "type": "input",
+      "cssSelector": "input.inputStyle[id=\"jsi_message_subject\"]",
+      "value": "{subject}",
+      "xpath": "id(\"jsi_message_subject\")",
+      "elementTag": "INPUT"
+    },
+    {
+      "description": "Input message body for the scout message.",
+      "output": null,
+      "timestamp": 1749700937502,
+      "tabId": 1852370754,
+      "type": "input",
+      "cssSelector": "textarea.inputStyle.w660.mt5[id=\"jsi_message_body\"]",
+      "value": "{message_body}",
+      "xpath": "id(\"jsi_message_body\")",
+      "elementTag": "TEXTAREA"
+    },
+    {
+      "description": "Click the button to confirm the scout message.",
+      "output": null,
+      "timestamp": 1749700951186,
+      "tabId": 1852370754,
+      "type": "click",
+      "cssSelector": ".ns-drawer-scout-footer>ul>li>a.btnAccept:nth-of-type(2)"
+    },
+    {
+      "description": "Click the button to send the scout message.",
+      "output": null,
+      "timestamp": 1749700951186,
+      "tabId": 1852370754,
+      "type": "click",
+      "cssSelector": ".ns-drawer-scout-confirm-buttons .btnPrimary  sdljasl;dkfjal;sdjfl;kasdjlkfasdjsl;k"
+    },
+    {
+      "description": "confirm the result",
+      "output": null,
+      "timestamp": 1749700951186,
+      "tabId": 1852370754,
+      "type": "click",
+      "cssSelector": "testestestse"
+    }
+  ],
+  "input_schema": [
+    {
+      "name": "email",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "password",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "member_id",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "subject",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "message_body",
+      "type": "string",
+      "required": true
+    }
+  ]
+}

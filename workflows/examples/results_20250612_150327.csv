@@ -1,0 +1,4 @@
+row_index,status,input_email,input_password,input_member_id,input_subject,input_message_body,error,result
+0,error,test@example.com,password123,12345,【エンジニア募集】新しいプロジェクトへのご参加について,こんにちは。素晴らしい経歴をお持ちですね。新しいプロジェクトについてお話ししたいと思います。,Cannot fall back to agent: LLM instance required.,
+1,error,test@example.com,password123,67890,【Web開発者募集】スタートアップでの挑戦,貴方のスキルセットが弊社のニーズと完璧にマッチしています。ぜひ一度お話しさせてください。,"BrowserContext.new_page: Target page, context or browser has been closed",
+2,error,test@example.com,password123,11111,【フルスタックエンジニア募集】成長企業での機会,弊社は急成長中のテック企業です。貴方の経験を活かせる環境があります。,"BrowserContext.new_page: Target page, context or browser has been closed",
