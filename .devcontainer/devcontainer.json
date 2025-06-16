@@ -73,7 +73,7 @@
     "seccomp=unconfined"
   ],
   
-  "forwardPorts": [8000, 8080],
+  "forwardPorts": [8000, 8080, 6080],
   
   "postStartCommand": "git config --global --add safe.directory /workspace"
 }

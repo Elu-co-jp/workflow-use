@@ -28,6 +28,13 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
         ca-certificates \
         fonts-liberation \
         libgbm1 \
+        # VNC and noVNC dependencies
+        x11vnc \
+        xvfb \
+        fluxbox \
+        novnc \
+        websockify \
+        supervisor \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Install uv
@@ -66,5 +73,38 @@ WORKDIR /home/${USERNAME}/workspace
 ENV DISPLAY=:99
 ENV PYTHONUNBUFFERED=1
 
+# Create VNC startup script
+RUN mkdir -p /home/${USERNAME}/.vnc /home/${USERNAME}/.config/supervisor
+
+# Configure supervisor for VNC and noVNC
+RUN echo "[supervisord]\n\
+nodaemon=true\n\
+user=${USERNAME}\n\
+\n\
+[program:xvfb]\n\
+command=/usr/bin/Xvfb :99 -screen 0 1280x1024x24\n\
+autorestart=true\n\
+user=${USERNAME}\n\
+priority=100\n\
+\n\
+[program:x11vnc]\n\
+command=/usr/bin/x11vnc -display :99 -nopw -listen localhost -xkb -ncache 10 -ncache_cr -forever\n\
+autorestart=true\n\
+user=${USERNAME}\n\
+priority=200\n\
+\n\
+[program:fluxbox]\n\
+command=/usr/bin/fluxbox\n\
+autorestart=true\n\
+user=${USERNAME}\n\
+environment=DISPLAY=:99\n\
+priority=300\n\
+\n\
+[program:novnc]\n\
+command=/usr/share/novnc/utils/launch.sh --vnc localhost:5900 --listen 6080\n\
+autorestart=true\n\
+user=${USERNAME}\n\
+priority=400" > /home/${USERNAME}/.config/supervisor/supervisord.conf
+
 # Expose common ports
-EXPOSE 8000 8080
+EXPOSE 8000 8080 5900 6080

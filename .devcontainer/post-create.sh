@@ -133,6 +133,12 @@ alias uvinstall='uv pip install -e /workspace'
 alias runtest='cd /workspace && python test_setup.py'
 alias runworkflow='cd /workspace/workflows/examples && python'
 
+# VNC and browser viewing aliases
+alias startvnc='supervisord -c ~/.config/supervisor/supervisord.conf'
+alias stopvnc='supervisorctl shutdown'
+alias vnc-status='supervisorctl status'
+alias browser-view='echo "🌐 Open http://localhost:6080/vnc.html in your browser to see the desktop"'
+
 # Auto-activate virtual environment
 if [ -f "/workspace/.venv/bin/activate" ]; then
     source /workspace/.venv/bin/activate
@@ -146,5 +152,11 @@ echo "   - runtest: Check your environment setup"
 echo "   - wf: Navigate to workspace"
 echo "   - uvactivate: Activate virtual environment"
 echo "   - python csv_runner.py: Run the CSV workflow runner"
+echo ""
+echo "🖥️  Browser viewing commands:"
+echo "   - startvnc: Start VNC server for browser viewing"
+echo "   - browser-view: Show URL for browser desktop viewing"
+echo "   - vnc-status: Check VNC server status"
+echo "   - stopvnc: Stop VNC server"
 echo ""
 echo "🎉 Happy coding!"

@@ -27,7 +27,7 @@ async def run_workflow_for_row(workflow: Workflow, row_data: Dict[str, str], row
             inputs=row_data,
             close_browser_at_end=True,
         )
-        
+
         return {
             'row_index': row_index,
             'status': 'success',
@@ -68,6 +68,8 @@ async def process_csv(csv_path: str, workflow_path: str, batch_size: int = 1) ->
             for j, row in enumerate(batch):
                 row_index = i + j
                 task = run_workflow_for_row(workflow, row, row_index)
+                # 5秒待機
+                await asyncio.sleep(5)
                 batch_tasks.append(task)
             
             # Run batch concurrently

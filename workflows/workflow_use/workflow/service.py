@@ -488,17 +488,27 @@ class Workflow:
 			else:
 				self.context.update(runtime_inputs)
 
-		async with self.browser:
+		# 各ステップで新しいブラウザコンテキストを作成
+		try:
+			# ブラウザを起動し、コンテキストが確実に作成されるまで待機
+			await self.browser.start()
+			await asyncio.sleep(1)  # コンテキストの作成を待機
+
+			# 権限を設定
+			await self.browser.grant_permissions(['clipboard-read', 'clipboard-write', 'notifications'])
+
 			raw_step_cfg = self.steps[step_index]
 			step_resolved = self._resolve_placeholders(raw_step_cfg)
 			result = await self._execute_step(step_index, step_resolved)
 			# Persist outputs (if declared) for future steps
 			self._store_output(step_resolved, result)
 			await asyncio.sleep(5)  # Keep browser open for 5 seconds
-		# Each invocation opens a new browser context – we close the browser to
-		# release resources right away.  This keeps the single-step API
-		# self-contained.
-		# await self.browser.close() # <-- Commented out for testing
+		finally:
+			# ステップ終了時にブラウザを閉じる
+			try:
+				await self.browser.close()
+			except Exception as e:
+				logger.error(f"Error closing browser: {e}")
 		return result
 
 	async def run(

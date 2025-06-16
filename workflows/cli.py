@@ -315,6 +315,12 @@ def run_workflow_command(
 		help='Path to the .workflow.json file.',
 		show_default=False,
 	),
+    var: list[str] = typer.Option(
+        None,
+        '--var',
+        '-v',
+        help='Workflow input variables (key=value)。複数指定可。',
+    ),
 ):
 	"""
 	Loads and executes a workflow, prompting the user for required inputs.
@@ -347,36 +353,36 @@ def run_workflow_command(
 		typer.secho('Workflow loaded successfully.', fg=typer.colors.GREEN, bold=True)
 
 		inputs = {}
-		input_definitions = workflow_obj.inputs_def  # Access inputs_def from the Workflow instance
+		if var:
+			for item in var:
+				if '=' in item:
+					k, v = item.split('=', 1)
+					inputs[k] = v
+				else:
+					inputs[item] = True
 
-		if input_definitions:  # Check if the list is not empty
-			typer.echo()  # Add space
+		input_definitions = workflow_obj.inputs_def
+		if input_definitions:
+			typer.echo()
 			typer.echo(typer.style('Provide values for the following workflow inputs:', bold=True))
-			typer.echo()  # Add space
-
+			typer.echo()
 			for input_def in input_definitions:
+				if input_def.name in inputs:
+					continue
 				var_name_styled = typer.style(input_def.name, fg=typer.colors.CYAN, bold=True)
 				prompt_question = typer.style(f'Enter value for {var_name_styled}', bold=True)
-
-				var_type = input_def.type.lower()  # type is a direct attribute
+				var_type = input_def.type.lower()
 				is_required = input_def.required
-
 				type_info_str = f'type: {var_type}'
-				if is_required:
-					status_str = typer.style('required', fg=typer.colors.RED)
-				else:
-					status_str = typer.style('optional', fg=typer.colors.YELLOW)
-
+				status_str = typer.style('required' if is_required else 'optional', fg=typer.colors.RED if is_required else typer.colors.YELLOW)
 				full_prompt_text = f'{prompt_question} ({status_str}, {type_info_str})'
 
-				input_val = None
+
 				if var_type == 'bool':
-					input_val = typer.confirm(full_prompt_text)
+					inputs[input_def.name] = typer.confirm(full_prompt_text)
 				elif var_type == 'number':
-					input_val = typer.prompt(full_prompt_text, type=float)
-				elif var_type == 'string':  # Default to string for other unknown types as well
-					input_val = typer.prompt(full_prompt_text, type=str)
-				else:  # Should ideally not happen if schema is validated, but good to have a fallback
+					inputs[input_def.name] = typer.prompt(full_prompt_text, type=float)
+				else:  # Default to string for other unknown types as well
 					typer.secho(
 						f"Warning: Unknown type '{var_type}' for variable '{input_def.name}'. Treating as string.",
 						fg=typer.colors.YELLOW,
