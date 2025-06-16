@@ -28,6 +28,11 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
         ca-certificates \
         fonts-liberation \
         libgbm1 \
+        # Japanese fonts
+        fonts-ipafont-gothic \
+        fonts-ipafont-mincho \
+        fonts-noto-cjk \
+        fonts-noto-color-emoji \
         # VNC and noVNC dependencies
         x11vnc \
         xvfb \
@@ -101,7 +106,7 @@ environment=DISPLAY=:99\n\
 priority=300\n\
 \n\
 [program:novnc]\n\
-command=/usr/share/novnc/utils/launch.sh --vnc localhost:5900 --listen 6080\n\
+command=/usr/bin/websockify --web /usr/share/novnc/ 6080 localhost:5900\n\
 autorestart=true\n\
 user=${USERNAME}\n\
 priority=400" > /home/${USERNAME}/.config/supervisor/supervisord.conf

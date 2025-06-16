@@ -8,6 +8,7 @@ import logging
 from datetime import datetime
 
 from workflow_use.workflow.service import Workflow
+from browser_use import Browser
 
 
 logging.basicConfig(
@@ -44,12 +45,16 @@ async def run_workflow_for_row(workflow: Workflow, row_data: Dict[str, str], row
         }
 
 
-async def process_csv(csv_path: str, workflow_path: str, batch_size: int = 1) -> List[Dict]:
+async def process_csv(csv_path: str, workflow_path: str, batch_size: int = 1, headless: bool = False) -> List[Dict]:
     """Process CSV file and run workflow for each row"""
     
-    # Load the workflow
-    workflow = Workflow.load_from_file(workflow_path)
+    # Create browser with headless mode setting
+    browser = Browser(headless=headless)
+    
+    # Load the workflow with the browser
+    workflow = Workflow.load_from_file(workflow_path, browser=browser)
     logger.info(f"Loaded workflow: {workflow.name}")
+    logger.info(f"Browser mode: {'Headless' if headless else 'Visual (check http://localhost:6080/vnc.html)'}")
     
     # Read CSV file
     results = []
@@ -130,6 +135,7 @@ async def main():
     parser.add_argument('workflow_file', help='Path to the workflow JSON file')
     parser.add_argument('--batch-size', type=int, default=1, help='Number of rows to process concurrently (default: 1)')
     parser.add_argument('--output', default='results', help='Output file prefix for results (default: results)')
+    parser.add_argument('--headless', action='store_true', help='Run browser in headless mode (default: visual mode)')
     
     args = parser.parse_args()
     
@@ -143,8 +149,17 @@ async def main():
         sys.exit(1)
     
     try:
+        # Show VNC info if in visual mode
+        if not args.headless:
+            logger.info("\n" + "="*60)
+            logger.info("🖥️  Visual Mode Enabled!")
+            logger.info("🌐 Open http://localhost:6080/vnc.html in your browser")
+            logger.info("   to see the browser automation in action!")
+            logger.info("="*60 + "\n")
+            await asyncio.sleep(3)  # Give user time to open VNC viewer
+        
         # Process the CSV
-        results = await process_csv(args.csv_file, args.workflow_file, args.batch_size)
+        results = await process_csv(args.csv_file, args.workflow_file, args.batch_size, args.headless)
         
         # Save results
         output_file = save_results(results, args.output)

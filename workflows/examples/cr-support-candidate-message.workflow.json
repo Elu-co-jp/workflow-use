@@ -127,28 +127,15 @@
       "timestamp": 1749700951186,
       "tabId": 1852370754,
       "type": "click",
-      "cssSelector": ".ns-drawer-scout-confirm-buttons .btnPrimary  sdljasl;dkfjal;sdjfl;kasdjlkfasdjsl;k"
-    },
-    {
-      "description": "confirm the result",
-      "output": null,
-      "timestamp": 1749700951186,
-      "tabId": 1852370754,
-      "type": "click",
-      "cssSelector": "testestestse"
+      "cssSelector": ".ns-drawer-scout-confirm-buttons .btnPrimary"
+    },{
+      "description": "Scroll to the bottom of the page.",
+      "type": "scroll",
+      "scrollX": 0,
+      "scrollY": 10000
     }
   ],
   "input_schema": [
-    {
-      "name": "email",
-      "type": "string",
-      "required": true
-    },
-    {
-      "name": "password",
-      "type": "string",
-      "required": true
-    },
     {
       "name": "member_id",
       "type": "string",

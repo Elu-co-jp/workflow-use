@@ -135,8 +135,8 @@ alias runworkflow='cd /workspace/workflows/examples && python'
 
 # VNC and browser viewing aliases
 alias startvnc='supervisord -c ~/.config/supervisor/supervisord.conf'
-alias stopvnc='supervisorctl shutdown'
-alias vnc-status='supervisorctl status'
+alias stopvnc='supervisorctl -c ~/.config/supervisor/supervisord.conf shutdown'
+alias vnc-status='supervisorctl -c ~/.config/supervisor/supervisord.conf status'
 alias browser-view='echo "🌐 Open http://localhost:6080/vnc.html in your browser to see the desktop"'
 
 # Auto-activate virtual environment
@@ -144,6 +144,70 @@ if [ -f "/workspace/.venv/bin/activate" ]; then
     source /workspace/.venv/bin/activate
 fi
 EOF
+
+# Set up VNC server configuration
+echo "🖥️  Setting up VNC server configuration..."
+mkdir -p ~/.config/supervisor
+
+# Create supervisor configuration
+cat > ~/.config/supervisor/supervisord.conf << 'ENDCONFIG'
+[supervisord]
+nodaemon=false
+user=vscode
+pidfile=/tmp/supervisord.pid
+logfile=/tmp/supervisord.log
+
+[supervisorctl]
+serverurl=unix:///tmp/supervisor.sock
+
+[unix_http_server]
+file=/tmp/supervisor.sock
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[program:xvfb]
+command=/usr/bin/Xvfb :99 -screen 0 1280x1024x24
+autorestart=true
+user=vscode
+priority=100
+stdout_logfile=/tmp/xvfb.log
+stderr_logfile=/tmp/xvfb.err
+
+[program:x11vnc]
+command=/usr/bin/x11vnc -display :99 -nopw -listen localhost -xkb -ncache 10 -ncache_cr -forever
+autorestart=true
+user=vscode
+priority=200
+stdout_logfile=/tmp/x11vnc.log
+stderr_logfile=/tmp/x11vnc.err
+
+[program:fluxbox]
+command=/usr/bin/fluxbox
+autorestart=true
+user=vscode
+environment=DISPLAY=:99
+priority=300
+stdout_logfile=/tmp/fluxbox.log
+stderr_logfile=/tmp/fluxbox.err
+
+[program:novnc]
+command=/usr/bin/websockify --web /usr/share/novnc/ 6080 localhost:5900
+autorestart=true
+user=vscode
+priority=400
+stdout_logfile=/tmp/novnc.log
+stderr_logfile=/tmp/novnc.err
+ENDCONFIG
+
+# Update font cache for Japanese fonts
+echo "🔤 Updating font cache for Japanese fonts..."
+fc-cache -fv > /dev/null 2>&1
+
+# Start VNC server automatically
+echo "🖥️  Starting VNC server for browser viewing..."
+supervisord -c ~/.config/supervisor/supervisord.conf > /dev/null 2>&1 &
+sleep 3
 
 echo "✅ Development environment setup complete!"
 echo ""
@@ -153,10 +217,11 @@ echo "   - wf: Navigate to workspace"
 echo "   - uvactivate: Activate virtual environment"
 echo "   - python csv_runner.py: Run the CSV workflow runner"
 echo ""
-echo "🖥️  Browser viewing commands:"
-echo "   - startvnc: Start VNC server for browser viewing"
-echo "   - browser-view: Show URL for browser desktop viewing"
+echo "🖥️  Browser viewing:"
+echo "   ✨ VNC server is running automatically!"
+echo "   🌐 Open http://localhost:6080/vnc.html in your browser to see the desktop"
 echo "   - vnc-status: Check VNC server status"
-echo "   - stopvnc: Stop VNC server"
+echo "   - stopvnc: Stop VNC server (if needed)"
+echo "   - startvnc: Restart VNC server (if stopped)"
 echo ""
 echo "🎉 Happy coding!"
