@@ -49,6 +49,15 @@ if ! uv pip show browser-use > /dev/null 2>&1; then
     uv pip install browser-use
 fi
 
+# Install Playwright and Chromium
+echo "🎭 Installing Playwright and Chromium..."
+if ! uv pip show playwright > /dev/null 2>&1; then
+    echo "📦 Installing Playwright..."
+    uv pip install playwright
+fi
+echo "🌐 Installing Chromium browser..."
+playwright install chromium
+
 # Build browser extension for workflow recording
 echo "🔧 Building browser extension..."
 if [ -d "/workspace/extension" ]; then
