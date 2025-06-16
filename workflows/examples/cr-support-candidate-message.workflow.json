@@ -128,11 +128,11 @@
       "tabId": 1852370754,
       "type": "click",
       "cssSelector": ".ns-drawer-scout-confirm-buttons .btnPrimary"
-    },{
+    },
+    {
       "description": "Scroll to the bottom of the page.",
-      "type": "scroll",
-      "scrollX": 0,
-      "scrollY": 10000
+      "type": "navigation",
+      "url": "https://cr-support.jp/scout/sent/"
     }
   ],
   "input_schema": [

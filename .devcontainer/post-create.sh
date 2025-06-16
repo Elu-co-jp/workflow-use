@@ -49,6 +49,21 @@ if ! uv pip show browser-use > /dev/null 2>&1; then
     uv pip install browser-use
 fi
 
+# Build browser extension for workflow recording
+echo "🔧 Building browser extension..."
+if [ -d "/workspace/extension" ]; then
+    cd /workspace/extension
+    if [ ! -d "node_modules" ]; then
+        echo "📦 Installing extension dependencies..."
+        npm install > /dev/null 2>&1
+    fi
+    if [ ! -d ".output/chrome-mv3" ]; then
+        echo "🔨 Building extension..."
+        npm run build > /dev/null 2>&1
+    fi
+    cd /workspace
+fi
+
 # Create a simple test script
 echo "📝 Creating test script..."
 cat > /workspace/test_setup.py << 'EOF'

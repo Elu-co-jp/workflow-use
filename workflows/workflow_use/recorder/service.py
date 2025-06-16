@@ -27,7 +27,7 @@ class RecordingService:
 	def __init__(self):
 		self.event_queue: asyncio.Queue[RecorderEvent] = asyncio.Queue()
 		self.last_workflow_update_event: Optional[HttpWorkflowUpdateEvent] = None
-		self.browser: Browser
+		self.browser: Optional[Browser] = None
 
 		self.final_workflow_output: Optional[WorkflowDefinitionSchema] = None
 		self.recording_complete_event = asyncio.Event()

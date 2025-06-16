@@ -152,6 +152,12 @@ def create_workflow():
 	Guides the user through recording browser actions, then uses the helper
 	to build and save the workflow definition.
 	"""
+	# Set DISPLAY environment variable for VNC
+	if 'DISPLAY' not in os.environ:
+		os.environ['DISPLAY'] = ':99'
+		typer.echo("🖥️  Using VNC display :99 for browser automation")
+		typer.echo("🌐 Open http://localhost:6080/vnc.html to see the browser")
+	
 	if not recording_service:
 		# Adjusted RecordingService initialization check assuming it doesn't need LLM
 		typer.secho(
