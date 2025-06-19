@@ -1,5 +1,4 @@
-ARG VARIANT="3.12-bookworm"
-FROM python:${VARIANT}
+FROM ghcr.io/keito4/config-base:1.0.13
 
 # Install system dependencies
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
@@ -12,17 +11,16 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
         python3-dev \
         chromium \
         chromium-driver \
-        firefox-esr \
+        firefox \
         wget \
         gnupg \
         unzip \
         xvfb \
         libxi6 \
-        libgconf-2-4 \
         libnss3 \
         libxss1 \
         libappindicator3-1 \
-        libasound2 \
+        libasound2t64 \
         libatk-bridge2.0-0 \
         libgtk-3-0 \
         ca-certificates \
@@ -53,8 +51,12 @@ ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+RUN if ! getent group $USERNAME > /dev/null 2>&1; then \
+        groupadd --gid $USER_GID $USERNAME; \
+    fi \
+    && if ! getent passwd $USERNAME > /dev/null 2>&1; then \
+        useradd --uid $USER_UID --gid $USER_GID -m $USERNAME; \
+    fi \
     && apt-get update \
     && apt-get install -y sudo \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
