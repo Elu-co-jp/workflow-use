@@ -21,6 +21,7 @@ from workflow_use.controller.utils import get_best_element_handle
 from workflow_use.schema.views import (
 	AgenticWorkflowStep,
 	ClickStep,
+	ConditionalStep,
 	DeterministicWorkflowStep,
 	InputStep,
 	KeyPressStep,
@@ -31,6 +32,7 @@ from workflow_use.schema.views import (
 	WorkflowInputSchemaDefinition,
 	WorkflowStep,
 )
+from workflow_use.workflow.condition_evaluator import ConditionEvaluator, WorkflowConditionError
 from workflow_use.workflow.prompts import STRUCTURED_OUTPUT_PROMPT, WORKFLOW_FALLBACK_PROMPT_TEMPLATE
 from workflow_use.workflow.views import WorkflowRunOutput
 
@@ -39,6 +41,13 @@ logger = logging.getLogger(__name__)
 WAIT_FOR_ELEMENT_TIMEOUT = 2500
 
 T = TypeVar('T', bound=BaseModel)
+
+
+class WorkflowStopException(Exception):
+	"""Exception raised when workflow should be stopped by conditional step."""
+	def __init__(self, message: str = "Workflow stopped by conditional step"):
+		self.message = message
+		super().__init__(self.message)
 
 
 class Workflow:
@@ -89,6 +98,9 @@ class Workflow:
 
 		self.inputs_def: List[WorkflowInputSchemaDefinition] = self.schema.input_schema
 		self._input_model: type[BaseModel] = self._build_input_model()
+		
+		# Initialize condition evaluator
+		self.condition_evaluator = ConditionEvaluator(self.browser)
 
 	# --- Loaders ---
 	@classmethod
@@ -170,6 +182,53 @@ class Workflow:
 			use_vision=True,  # Consider making this configurable via WorkflowStep schema
 		)
 		return await agent.run(max_steps=max_steps)
+
+	async def _run_conditional_step(self, step: ConditionalStep) -> ActionResult:
+		"""Execute a conditional step to check conditions and control workflow flow."""
+		from browser_use.agent.views import ActionResult  # Local import
+		
+		try:
+			# Evaluate the condition
+			condition_result = await self.condition_evaluator.evaluate_condition(
+				condition=step.condition,
+				context=self.context,
+				negate=step.negate_condition or False
+			)
+			
+			logger.info(f"Conditional step result: {condition_result}, action: {step.action}")
+			
+			# Perform action based on condition result
+			if condition_result:
+				if step.action == 'stop':
+					stop_message = step.stop_message or "Workflow stopped by conditional step"
+					logger.info(f"Stopping workflow: {stop_message}")
+					raise WorkflowStopException(stop_message)
+				elif step.action == 'skip_next':
+					# This will be handled in the main execution loop
+					logger.info("Conditional step indicates to skip next step")
+					# Store skip flag in context for main loop to check
+					self.context['_skip_next_step'] = True
+				# 'continue' action does nothing, just proceeds
+				
+			# Return successful ActionResult
+			return ActionResult(
+				extracted_content=None,
+				success=True,
+				is_done=True,
+				error=None
+			)
+			
+		except WorkflowConditionError as e:
+			logger.error(f"Conditional step failed: {str(e)}")
+			return ActionResult(
+				extracted_content=None,
+				success=False,
+				is_done=False,
+				error=f"Condition evaluation failed: {str(e)}"
+			)
+		except WorkflowStopException:
+			# Re-raise to be handled by the main execution loop
+			raise
 
 	async def _fallback_to_agent(
 		self,
@@ -362,7 +421,18 @@ class Workflow:
 		# Use 'type' field from the WorkflowStep dictionary
 		result: ActionResult | AgentHistoryList
 
-		if isinstance(step_resolved, DeterministicWorkflowStep):
+		if isinstance(step_resolved, ConditionalStep):
+			# Handle conditional steps
+			logger.info(f'Executing conditional step: {step_resolved.description or "No description"}')
+			try:
+				result = await self._run_conditional_step(step_resolved)
+			except WorkflowStopException:
+				# Re-raise to be handled by main execution loop
+				raise
+			except Exception as e:
+				logger.error(f'Conditional step {step_index + 1} failed: {e}')
+				raise ValueError(f'Conditional step {step_index + 1} failed: {e}')
+		elif isinstance(step_resolved, DeterministicWorkflowStep):
 			from browser_use.agent.views import ActionResult  # Local import ok
 
 			try:
@@ -550,19 +620,29 @@ class Workflow:
 					logger.info('Cancellation requested - stopping workflow execution')
 					break
 
+				# Check if previous conditional step indicated to skip this step
+				if self.context.get('_skip_next_step', False):
+					logger.info(f'Skipping step {step_index + 1} as requested by previous conditional step')
+					self.context.pop('_skip_next_step', None)  # Remove the flag
+					continue
+
 				# Use description from the step dictionary
 				step_description = step_dict.description or 'No description provided'
 				logger.info(f'--- Running Step {step_index + 1}/{len(self.steps)} -- {step_description} ---')
 				# Resolve placeholders using the current context (works on the dictionary)
 				step_resolved = self._resolve_placeholders(step_dict)
 
-				# Execute step using the unified _execute_step method
-				result = await self._execute_step(step_index, step_resolved)
+				try:
+					# Execute step using the unified _execute_step method
+					result = await self._execute_step(step_index, step_resolved)
 
-				results.append(result)
-				# Persist outputs using the resolved step dictionary
-				self._store_output(step_resolved, result)
-				logger.info(f'--- Finished Step {step_index + 1} ---\n')
+					results.append(result)
+					# Persist outputs using the resolved step dictionary
+					self._store_output(step_resolved, result)
+					logger.info(f'--- Finished Step {step_index + 1} ---\n')
+				except WorkflowStopException as e:
+					logger.info(f'Workflow execution stopped at step {step_index + 1}: {e.message}')
+					break
 
 			# Convert results to output model if requested
 			output_model_result: T | None = None

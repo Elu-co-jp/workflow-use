@@ -1,0 +1,36 @@
+{
+  "workflow_analysis": "Test workflow for error detection functionality. This workflow demonstrates how conditional steps can be used to detect error conditions and stop workflow execution gracefully.",
+  "name": "Error Detection Workflow",
+  "description": "Demonstrates error detection using conditional steps",
+  "version": "1.0",
+  "steps": [
+    {
+      "description": "Navigate to a page that shows 404 in content",
+      "output": null,
+      "type": "navigation",
+      "url": "https://httpbin.org/html"
+    },
+    {
+      "description": "Check if page contains Herman Melville (should stop workflow)",
+      "type": "conditional",
+      "condition": "document.body.textContent.includes('Herman Melville')",
+      "action": "stop",
+      "stop_message": "Herman Melville text found - stopping workflow as expected",
+      "negate_condition": false
+    },
+    {
+      "description": "This step should not be reached due to condition detection",
+      "type": "navigation",
+      "url": "https://httpbin.org/json"
+    },
+    {
+      "description": "Final step that should never execute",
+      "type": "conditional",
+      "condition": "true",
+      "action": "continue",
+      "stop_message": null,
+      "negate_condition": false
+    }
+  ],
+  "input_schema": []
+}

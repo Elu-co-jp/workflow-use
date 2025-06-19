@@ -1,0 +1,60 @@
+{
+  "workflow_analysis": "Test workflow demonstrating conditional step functionality. This workflow navigates to a test page and uses conditional steps to check for specific elements and stop execution based on various conditions.",
+  "name": "Conditional Step Test Workflow",
+  "description": "Demonstrates conditional step functionality with various condition types and actions",
+  "version": "1.0",
+  "steps": [
+    {
+      "description": "Navigate to a test page",
+      "output": null,
+      "type": "navigation",
+      "url": "https://httpbin.org/html"
+    },
+    {
+      "description": "Check if error element exists - should not stop workflow",
+      "type": "conditional",
+      "condition": "document.querySelector('.error') !== null",
+      "action": "stop",
+      "stop_message": "Error element found on page",
+      "negate_condition": false
+    },
+    {
+      "description": "Check if page title contains 'HTML' - should continue",
+      "type": "conditional",
+      "condition": "document.title.includes('HTML')",
+      "action": "continue",
+      "stop_message": null,
+      "negate_condition": false
+    },
+    {
+      "description": "Check if body element exists - should skip next step",
+      "type": "conditional",
+      "condition": "document.querySelector('body') !== null",
+      "action": "skip_next",
+      "stop_message": null,
+      "negate_condition": false
+    },
+    {
+      "description": "This step should be skipped due to previous conditional",
+      "type": "navigation",
+      "url": "https://example.com/should-not-reach"
+    },
+    {
+      "description": "Check for h1 element with specific text",
+      "type": "conditional", 
+      "condition": "document.querySelector('h1') && document.querySelector('h1').textContent.includes('Herman')",
+      "action": "continue",
+      "stop_message": null,
+      "negate_condition": false
+    },
+    {
+      "description": "Final conditional - check if we're still on the right page",
+      "type": "conditional",
+      "condition": "window.location.href.includes('httpbin.org')",
+      "action": "continue",
+      "stop_message": "Not on expected page",
+      "negate_condition": false
+    }
+  ],
+  "input_schema": []
+}

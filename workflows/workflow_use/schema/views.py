@@ -95,6 +95,17 @@ class PageExtractionStep(TimestampedWorkflowStep):
 	goal: str = Field(..., description='The goal of the page extraction.')
 
 
+class ConditionalStep(BaseWorkflowStep):
+	"""Conditional step that can stop workflow execution based on specified conditions."""
+	
+	type: Literal['conditional']
+	condition: str = Field(..., description='JavaScript expression to evaluate in browser context (e.g., "document.querySelector(\'.error\') !== null")')
+	action: Literal['stop', 'continue', 'skip_next'] = Field(default='stop', description='Action to take when condition is true')
+	stop_message: Optional[str] = Field(None, description='Message to display when stopping workflow')
+	target_step: Optional[int] = Field(None, description='Step index to jump to (0-based, for future use)')
+	negate_condition: Optional[bool] = Field(False, description='If true, performs action when condition is false instead of true')
+
+
 # --- Union of all possible step types ---
 # This Union defines what constitutes a valid step in the "steps" list.
 DeterministicWorkflowStep = Union[
@@ -105,6 +116,7 @@ DeterministicWorkflowStep = Union[
 	KeyPressStep,
 	ScrollStep,
 	PageExtractionStep,
+	ConditionalStep,
 ]
 
 AgenticWorkflowStep = AgentTaskWorkflowStep
