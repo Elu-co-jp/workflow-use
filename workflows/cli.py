@@ -31,6 +31,7 @@ app = typer.Typer(
 
 # Default LLM instance to None
 llm_instance = None
+page_extraction_llm = None
 try:
 	llm_instance = ChatOpenAI(model='gpt-4o')
 	page_extraction_llm = ChatOpenAI(model='gpt-4o-mini')
