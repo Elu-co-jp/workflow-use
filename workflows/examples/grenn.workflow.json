@@ -78,6 +78,17 @@
       "value": "{message_text}",
       "xpath": "//textarea[@class='mdl-scoutform__textarea' and @placeholder='本文']",
       "elementTag": "TEXTAREA"
+    },
+    {
+      "description": "Click the send button to submit the scout message.",
+      "output": null,
+      "timestamp": 1750063598000,
+      "tabId": 493738666,
+      "type": "click",
+      "cssSelector": "button.mdl-button.mdl-js-button.mdl-button--raised.mdl-button--orange",
+      "xpath": "//button[contains(@class, 'mdl-button--orange') and contains(text(), '送信')]",
+      "elementTag": "BUTTON",
+      "elementText": "送信"
     }
   ],
   "input_schema": [
