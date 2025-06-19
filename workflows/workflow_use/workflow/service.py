@@ -119,6 +119,9 @@ class Workflow:
 		# Assumes WorkflowStep for deterministic type has 'action' and 'params' keys
 		action_name: str = step.type  # Expect 'action' key for deterministic steps
 		params: Dict[str, Any] = step.model_dump()  # Use params if present
+		
+		if action_name == 'conditional_stop':
+			params['context'] = self.context.copy()
 
 		ActionModel = self.controller.registry.create_action_model(include_actions=[action_name])
 		# Pass the params dictionary directly
@@ -562,6 +565,12 @@ class Workflow:
 				results.append(result)
 				# Persist outputs using the resolved step dictionary
 				self._store_output(step_resolved, result)
+				
+				# Check if step signaled to stop workflow
+				if isinstance(result, ActionResult) and result.is_done:
+					logger.info(f'Workflow stopped at step {step_index + 1} due to conditional stop')
+					break
+					
 				logger.info(f'--- Finished Step {step_index + 1} ---\n')
 
 			# Convert results to output model if requested

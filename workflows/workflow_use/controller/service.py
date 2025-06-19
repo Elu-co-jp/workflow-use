@@ -10,6 +10,7 @@ from langchain_core.prompts import PromptTemplate
 from workflow_use.controller.utils import get_best_element_handle, truncate_selector
 from workflow_use.controller.views import (
 	ClickElementDeterministicAction,
+	ConditionalStopAction,
 	InputTextDeterministicAction,
 	KeyPressDeterministicAction,
 	NavigationAction,
@@ -239,3 +240,40 @@ class WorkflowController(Controller):
 				msg = f'📄  Extracted from page\n: {content}\n'
 				logger.info(msg)
 				return ActionResult(extracted_content=msg)
+
+		@self.registry.action('Evaluate condition and stop if true', param_model=ConditionalStopAction)
+		async def conditional_stop(params: ConditionalStopAction, browser_session: Browser) -> ActionResult:
+			"""Evaluate a Python expression and return stop signal if condition is True."""
+			try:
+				safe_builtins = {
+					'str': str,
+					'int': int,
+					'float': float,
+					'bool': bool,
+					'len': len,
+					'min': min,
+					'max': max,
+					'sum': sum,
+					'abs': abs,
+					'round': round,
+				}
+				condition_result = eval(params.condition, {"__builtins__": safe_builtins}, params.context or {})
+				
+				if condition_result:
+					stop_msg = params.stop_message or f"Workflow stopped due to condition: {params.condition}"
+					logger.info(f"🛑 {stop_msg}")
+					return ActionResult(
+						extracted_content=stop_msg,
+						include_in_memory=True,
+						is_done=True,
+						success=True
+					)
+				else:
+					msg = f"✅ Condition not met, continuing: {params.condition}"
+					logger.info(msg)
+					return ActionResult(extracted_content=msg, include_in_memory=True)
+					
+			except Exception as e:
+				error_msg = f"Error evaluating condition '{params.condition}': {str(e)}"
+				logger.error(error_msg)
+				raise Exception(error_msg)

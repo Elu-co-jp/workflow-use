@@ -1,0 +1,30 @@
+{
+  "name": "Conditional Continue Example",
+  "description": "Example workflow demonstrating conditional stop when condition is NOT met",
+  "version": "1.0",
+  "steps": [
+    {
+      "type": "navigation",
+      "url": "https://example.com",
+      "description": "Navigate to example site"
+    },
+    {
+      "type": "extract_page_content",
+      "goal": "Extract page title",
+      "output": "page_title",
+      "description": "Extract page title for condition check"
+    },
+    {
+      "type": "conditional_stop",
+      "condition": "'NotFound' in page_title",
+      "stop_message": "Found 'NotFound' in page title, stopping workflow",
+      "description": "Stop if page title contains 'NotFound' (should not match)"
+    },
+    {
+      "type": "navigation",
+      "url": "https://google.com",
+      "description": "This step SHOULD execute since condition is not met"
+    }
+  ],
+  "input_schema": []
+}

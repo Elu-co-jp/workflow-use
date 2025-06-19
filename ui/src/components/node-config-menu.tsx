@@ -175,6 +175,10 @@ export const NodeConfigMenu: React.FC<NodeConfigMenuProps> = ({
               <option value="click">Click</option>
               <option value="select_change">Select Change</option>
               <option value="input">Input</option>
+              <option value="key_press">Key Press</option>
+              <option value="scroll">Scroll</option>
+              <option value="extract_page_content">Extract Page Content</option>
+              <option value="conditional_stop">Conditional Stop</option>
             </select>
           ) : (
             toTitleCase(stepData.type)
@@ -368,6 +372,64 @@ export const NodeConfigMenu: React.FC<NodeConfigMenuProps> = ({
               />
             ) : (
               <div className="mt-1">{stepData.value}</div>
+            )}
+          </div>
+        )}
+
+        {/* Goal (for extract_page_content steps) */}
+        {(stepData.goal || (isEditing && editedStepData?.type === 'extract_page_content')) && (
+          <div className="mb-3">
+            <strong>Goal:</strong>
+            {isEditing ? (
+              <textarea
+                value={editedStepData?.goal || ""}
+                onChange={(e) => handleInputChange("goal", e.target.value)}
+                className="mt-1 w-full rounded border border-gray-600 bg-[#333] px-2 py-1 text-sm"
+                placeholder="What to extract from the page"
+                rows={3}
+              />
+            ) : (
+              <div className="mt-1 bg-gray-700 p-2 rounded text-sm">
+                {stepData.goal}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Condition (for conditional_stop steps) */}
+        {(stepData.condition || (isEditing && editedStepData?.type === 'conditional_stop')) && (
+          <div className="mb-3">
+            <strong>Condition:</strong>
+            {isEditing ? (
+              <textarea
+                value={editedStepData?.condition || ""}
+                onChange={(e) => handleInputChange("condition", e.target.value)}
+                className="mt-1 w-full rounded border border-gray-600 bg-[#333] px-2 py-1 text-sm"
+                placeholder="Python expression, e.g., context_var > 10"
+                rows={3}
+              />
+            ) : (
+              <div className="mt-1 bg-gray-700 p-2 rounded text-sm font-mono">
+                {stepData.condition}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Stop Message (for conditional_stop steps) */}
+        {(stepData.stop_message || (isEditing && editedStepData?.type === 'conditional_stop')) && (
+          <div className="mb-3">
+            <strong>Stop Message:</strong>
+            {isEditing ? (
+              <input
+                type="text"
+                value={editedStepData?.stop_message || ""}
+                onChange={(e) => handleInputChange("stop_message", e.target.value)}
+                className="mt-1 w-full rounded border border-gray-600 bg-[#333] px-2 py-1 text-sm"
+                placeholder="Optional message when condition is met"
+              />
+            ) : (
+              <div className="mt-1">{stepData.stop_message}</div>
             )}
           </div>
         )}

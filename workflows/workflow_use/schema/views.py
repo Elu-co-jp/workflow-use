@@ -95,6 +95,14 @@ class PageExtractionStep(TimestampedWorkflowStep):
 	goal: str = Field(..., description='The goal of the page extraction.')
 
 
+class ConditionalStopStep(TimestampedWorkflowStep):
+	"""Conditionally stops workflow execution based on context evaluation."""
+	
+	type: Literal['conditional_stop']
+	condition: str = Field(..., description='Python expression to evaluate using context variables. If True, workflow stops.')
+	stop_message: Optional[str] = Field(None, description='Optional message to log when stopping.')
+
+
 # --- Union of all possible step types ---
 # This Union defines what constitutes a valid step in the "steps" list.
 DeterministicWorkflowStep = Union[
@@ -105,6 +113,7 @@ DeterministicWorkflowStep = Union[
 	KeyPressStep,
 	ScrollStep,
 	PageExtractionStep,
+	ConditionalStopStep,
 ]
 
 AgenticWorkflowStep = AgentTaskWorkflowStep

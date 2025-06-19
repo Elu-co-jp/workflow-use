@@ -1,6 +1,6 @@
-from typing import Literal, Optional
+from typing import Any, Dict, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 # Shared config allowing extra fields so recorder payloads pass through
@@ -79,3 +79,10 @@ class PageExtractionAction(_BaseExtra):
 
 	type: Literal['extract_page_content']
 	goal: str
+
+
+class ConditionalStopAction(BaseModel):
+	"""Parameters for conditional stop action."""
+	condition: str = Field(..., description='Python expression to evaluate')
+	stop_message: Optional[str] = Field(None, description='Message to display when stopping')
+	context: Optional[Dict[str, Any]] = Field(None, description='Context variables for evaluation')

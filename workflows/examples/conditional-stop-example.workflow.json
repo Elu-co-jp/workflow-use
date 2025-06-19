@@ -1,0 +1,30 @@
+{
+  "name": "Conditional Stop Example",
+  "description": "Example workflow demonstrating conditional stop functionality",
+  "version": "1.0",
+  "steps": [
+    {
+      "type": "navigation",
+      "url": "https://example.com",
+      "description": "Navigate to example site"
+    },
+    {
+      "type": "extract_page_content",
+      "goal": "Extract page title",
+      "output": "page_title",
+      "description": "Extract page title for condition check"
+    },
+    {
+      "type": "conditional_stop",
+      "condition": "'Example' in page_title",
+      "stop_message": "Found 'Example' in page title, stopping workflow",
+      "description": "Stop if page title contains 'Example'"
+    },
+    {
+      "type": "navigation",
+      "url": "https://google.com",
+      "description": "This step should not execute if condition is met"
+    }
+  ],
+  "input_schema": []
+}
