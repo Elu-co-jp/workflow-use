@@ -24,9 +24,11 @@ async def run_workflow_for_row(workflow: Workflow, row_data: Dict[str, str], row
         logger.info(f"Processing row {row_index + 1}: {row_data}")
         
         # Run the workflow with the row data as inputs
+        # Keep browser open for batch processing (only close on last row)
+        is_last_row = row_index == (getattr(workflow, '_total_rows', 0) - 1)
         result = await workflow.run(
             inputs=row_data,
-            close_browser_at_end=True,
+            close_browser_at_end=is_last_row,
         )
 
         return {
@@ -45,7 +47,7 @@ async def run_workflow_for_row(workflow: Workflow, row_data: Dict[str, str], row
         }
 
 
-async def process_csv(csv_path: str, workflow_path: str, batch_size: int = 1, headless: bool = False) -> List[Dict]:
+async def process_csv(csv_path: str, workflow_path: str, headless: bool = False) -> List[Dict]:
     """Process CSV file and run workflow for each row"""
     
     # Create browser with headless mode setting
@@ -65,25 +67,25 @@ async def process_csv(csv_path: str, workflow_path: str, batch_size: int = 1, he
         
         logger.info(f"Found {total_rows} rows in CSV file")
         
-        # Process rows in batches
-        for i in range(0, total_rows, batch_size):
-            batch = rows[i:i + batch_size]
-            batch_tasks = []
+        # Store total rows in workflow for browser management
+        workflow._total_rows = total_rows
+        
+        # Process rows sequentially to maintain browser state
+        for i, row in enumerate(rows):
+            logger.info(f"Processing candidate {i + 1}/{total_rows}")
             
-            for j, row in enumerate(batch):
-                row_index = i + j
-                task = run_workflow_for_row(workflow, row, row_index)
-                # 5秒待機
+            # Process each row sequentially (not concurrently)
+            result = await run_workflow_for_row(workflow, row, i)
+            results.append(result)
+            
+            # Add delay between candidates (except for the last one)
+            if i < total_rows - 1:
+                logger.info("Waiting 5 seconds before next candidate...")
                 await asyncio.sleep(5)
-                batch_tasks.append(task)
-            
-            # Run batch concurrently
-            batch_results = await asyncio.gather(*batch_tasks)
-            results.extend(batch_results)
             
             # Progress update
-            processed = min(i + batch_size, total_rows)
-            logger.info(f"Progress: {processed}/{total_rows} rows processed ({processed/total_rows*100:.1f}%)")
+            processed = i + 1
+            logger.info(f"Progress: {processed}/{total_rows} candidates processed ({processed/total_rows*100:.1f}%)")
     
     return results
 
@@ -133,7 +135,6 @@ async def main():
     parser = argparse.ArgumentParser(description='Run workflow for each row in a CSV file')
     parser.add_argument('csv_file', help='Path to the CSV file')
     parser.add_argument('workflow_file', help='Path to the workflow JSON file')
-    parser.add_argument('--batch-size', type=int, default=1, help='Number of rows to process concurrently (default: 1)')
     parser.add_argument('--output', default='results', help='Output file prefix for results (default: results)')
     parser.add_argument('--headless', action='store_true', help='Run browser in headless mode (default: visual mode)')
     
@@ -159,7 +160,7 @@ async def main():
             await asyncio.sleep(3)  # Give user time to open VNC viewer
         
         # Process the CSV
-        results = await process_csv(args.csv_file, args.workflow_file, args.batch_size, args.headless)
+        results = await process_csv(args.csv_file, args.workflow_file, args.headless)
         
         # Save results
         output_file = save_results(results, args.output)
