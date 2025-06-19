@@ -14,7 +14,10 @@ def normalize_csv(input_file, output_file):
         # Read all rows and normalize candidate_id
         rows = []
         for row in reader:
-            if 'candidate_id' in row:
+            if 'candidateId' in row:
+                # Remove leading zeros from candidateId
+                row['candidateId'] = row['candidateId'].lstrip('0') or '0'
+            elif 'candidate_id' in row:
                 # Remove leading zeros from candidate_id
                 row['candidate_id'] = row['candidate_id'].lstrip('0') or '0'
             rows.append(row)
@@ -30,7 +33,10 @@ def normalize_csv(input_file, output_file):
     
     # Show the changes
     for i, row in enumerate(rows[:5]):  # Show first 5 rows
-        print(f"Row {i+1}: candidate_id = {row['candidate_id']}")
+        if 'candidateId' in row:
+            print(f"Row {i+1}: candidateId = {row['candidateId']}")
+        elif 'candidate_id' in row:
+            print(f"Row {i+1}: candidate_id = {row['candidate_id']}")
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:

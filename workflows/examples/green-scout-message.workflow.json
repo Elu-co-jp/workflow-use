@@ -10,7 +10,7 @@
       "timestamp": null,
       "tabId": null,
       "type": "navigation",
-      "url": "https://www.green-japan.com/client/search?user_ids%5B%5D={candidate_id}"
+      "url": "https://www.green-japan.com/client/search?user_ids%5B%5D={candidateId}"
     },
     {
       "description": "Click on candidate row to open full drawer.",
@@ -39,8 +39,8 @@
       "timestamp": 1750063593275,
       "tabId": 493738666,
       "type": "click",
-      "cssSelector": "button.custom-select-button[id=\"js-select-jobOffer{candidate_id}\"]",
-      "xpath": "//button[@id='js-select-jobOffer{candidate_id}']",
+      "cssSelector": "button.custom-select-button[id=\"js-select-jobOffer{candidateId}\"]",
+      "xpath": "//button[@id='js-select-jobOffer{candidateId}']",
       "elementTag": "BUTTON",
       "elementText": "\u30b9\u30ab\u30a6\u30c8\u3059\u308b\u6c42\u4eba\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044arrow_drop_down",
       "wait_for": "div.custom-menu-item"
@@ -75,7 +75,7 @@
       "tabId": 493738666,
       "type": "input",
       "cssSelector": "textarea.mdl-scoutform__textarea[placeholder=\"本文\"][id]",
-      "value": "{message_text}",
+      "value": "{message}",
       "xpath": "//textarea[@class='mdl-scoutform__textarea' and @placeholder='本文' and @id]",
       "elementTag": "TEXTAREA"
     },
@@ -93,7 +93,7 @@
   ],
   "input_schema": [
     {
-      "name": "candidate_id",
+      "name": "candidateId",
       "type": "string",
       "required": true
     },
@@ -103,7 +103,7 @@
       "required": true
     },
     {
-      "name": "message_text",
+      "name": "message",
       "type": "string",
       "required": true
     }
