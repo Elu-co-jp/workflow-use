@@ -1,0 +1,11 @@
+# 実行結果ファイル（一時的）
+results_*.csv
+**/results_*.csv
+
+# 一時ファイル
+*.tmp
+*.log
+
+# ブラウザ関連
+browser_test_screenshot.png
+image*.png

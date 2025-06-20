@@ -1,6 +1,6 @@
 {
   "workflow_analysis": "The workflow involves logging into a website 'cr-support.jp', navigating to specific sections of the site, searching for a candidate using a member ID, and sending a message via a recruitment system. The main objectives are to handle a login process, search for a specific candidate by ID, and send a scout message, likely in a recruiting context. The workflow assumes some data input, such as email, password, member ID, and possibly job parameters for searching candidates. The parts of the workflow that involve selecting candidates and sending messages are likely dynamic, with content that may change and require agentic behavior. However, key progression points such as logins and specific searches can remain deterministic.",
-  "name": "CR-Support Candidate Message Workflow",
+  "name": "bizreach - CR-Support Candidate Message Workflow",
   "description": "This workflow logs into CR-Support, finds a candidate using a member ID, and sends a customized message to the selected candidate.",
   "version": "1.0",
   "steps": [
@@ -127,15 +127,28 @@
       "timestamp": 1749700951186,
       "tabId": 1852370754,
       "type": "click",
-      "cssSelector": ".ns-drawer-scout-confirm-buttons .btnPrimary"
+      "cssSelector": ".ns-drawer-scout-confirm-buttons .btnPrimary  sdljasl;dkfjal;sdjfl;kasdjlkfasdjsl;k"
     },
     {
-      "description": "Scroll to the bottom of the page.",
-      "type": "navigation",
-      "url": "https://cr-support.jp/scout/sent/"
+      "description": "confirm the result",
+      "output": null,
+      "timestamp": 1749700951186,
+      "tabId": 1852370754,
+      "type": "click",
+      "cssSelector": "testestestse"
     }
   ],
   "input_schema": [
+    {
+      "name": "email",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "password",
+      "type": "string",
+      "required": true
+    },
     {
       "name": "member_id",
       "type": "string",
