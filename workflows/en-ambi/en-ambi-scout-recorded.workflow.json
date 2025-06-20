@@ -1,0 +1,206 @@
+{
+  "workflow_analysis": "This workflow automates scout message sending on en-ambi.com. It navigates to the scout section, searches for candidates by member number, and accesses their profile for scout messaging. The workflow is designed to work with CSV input containing member numbers and personalized messages.",
+  "name": "en-ambi - Scout Message (Recorded)",
+  "description": "Send scout messages to candidates on en-ambi.com using recorded workflow",
+  "version": "1.0",
+  "steps": [
+    {
+      "description": "Navigate to en-ambi login page",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "navigation",
+      "url": "https://en-ambi.com/company/"
+    },
+    {
+      "description": "Enter login ID",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "input",
+      "cssSelector": "input[name='loginId'], input[type='text']:first-of-type",
+      "value": "FOUT001",
+      "xpath": "//input[@name='loginId' or (@type='text' and position()=1)]",
+      "elementTag": "INPUT"
+    },
+    {
+      "description": "Enter password",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "input",
+      "cssSelector": "input[name='password'], input[type='password']",
+      "value": "frea9out!!!",
+      "xpath": "//input[@name='password' or @type='password']",
+      "elementTag": "INPUT"
+    },
+    {
+      "description": "Click login button",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "click",
+      "cssSelector": "button[type='submit'], .login-btn, button:has-text('ログイン')",
+      "xpath": "//button[@type='submit' or contains(text(), 'ログイン')]",
+      "elementTag": "BUTTON"
+    },
+    {
+      "description": "Navigate to scout page",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "navigation",
+      "url": "https://en-ambi.com/company/scout/"
+    },
+    {
+      "description": "Click on member number search button",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "click",
+      "cssSelector": "a.md_btn.md_btn--min.md_btn--green.search_No.js_modalOpen",
+      "xpath": "//a[contains(@class, 'search_No') and contains(text(), '会員No.から検索')]",
+      "elementTag": "A",
+      "elementText": "会員No.から検索"
+    },
+    {
+      "description": "Click on member number input field",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "click",
+      "cssSelector": "input[name=\"UID\"][id=\"js_noSearch_text\"]",
+      "xpath": "//input[@name='UID' and @id='js_noSearch_text']",
+      "elementTag": "INPUT"
+    },
+    {
+      "description": "Input member number",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "input",
+      "cssSelector": "input[name=\"UID\"][id=\"js_noSearch_text\"]",
+      "value": "{memberNumber}",
+      "xpath": "//input[@name='UID' and @id='js_noSearch_text']",
+      "elementTag": "INPUT"
+    },
+    {
+      "description": "Click submit button to search candidate",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "click",
+      "cssSelector": "a.md_btn.md_btn--big.js_submitBtn",
+      "xpath": "//a[contains(@class, 'js_submitBtn') and contains(text(), '職務経歴書を確認してスカウト')]",
+      "elementTag": "A",
+      "elementText": "職務経歴書を確認してスカウト"
+    },
+    {
+      "description": "Wait for search results and click scout button",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "click",
+      "cssSelector": "#js_scout_title_text",
+      "xpath": "//a[contains(@href, 'scout')] | //button[contains(text(), 'スカウト')]",
+      "elementTag": "A",
+      "wait_for": "textarea, .message-input"
+    },
+    {
+      "description": "Input scout message",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "input",
+      "cssSelector": "#js_scout_body_text",
+      "value": "{message}",
+      "xpath": "//textarea[contains(@name, 'message') or contains(@placeholder, 'メッセージ')]",
+      "elementTag": "TEXTAREA"
+    },
+    {
+      "description": "Input scout title",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "input",
+      "cssSelector": "#js_scout_title_text",
+      "value": "{scoutTitle}",
+      "xpath": "//input[@id='js_scout_title_text']",
+      "elementTag": "INPUT"
+    },
+    {
+      "description": "Click job selection button",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "click",
+      "cssSelector": "#js_scout_send_form > div.mainSet > div.jobSelectSection > div.jobSeelectCell > a",
+      "xpath": "//div[@class='jobSeelectCell']//a",
+      "elementTag": "A"
+    },
+    {
+      "description": "Input job number in search field",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "input",
+      "cssSelector": "#searchForm > div > ul > li:nth-child(1) > div input[type=text]",
+      "value": "{jobNumber}",
+      "xpath": "//input[@type='text']",
+      "elementTag": "INPUT"
+    },
+    {
+      "description": "Select job from search results",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "click",
+      "cssSelector": "#md_mainArea > section > div.contents > table > tbody > tr:nth-child(2) > td.data.check > label",
+      "xpath": "//td[@class='data check']//label",
+      "elementTag": "LABEL"
+    },
+    {
+      "description": "Click confirm selection button",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "click",
+      "cssSelector": "#md_mainArea > div.bottomBtnArea > a",
+      "xpath": "//div[@class='bottomBtnArea']//a",
+      "elementTag": "A"
+    },
+    {
+      "description": "Click send button to submit scout message",
+      "output": null,
+      "timestamp": 1750385570827,
+      "tabId": 493739032,
+      "type": "click",
+      "cssSelector": "#js_scout_send_form input[type='submit'], #js_scout_send_form button[type='submit']",
+      "xpath": "//input[@type='submit'] | //button[@type='submit']",
+      "elementTag": "BUTTON",
+      "elementText": "送信"
+    }
+  ],
+  "input_schema": [
+    {
+      "name": "memberNumber",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "message",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "scoutTitle",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "jobNumber",
+      "type": "string",
+      "required": true
+    }
+  ]
+}
