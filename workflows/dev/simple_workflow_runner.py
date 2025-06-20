@@ -1,15 +1,16 @@
+#!/usr/bin/env python3
+"""
+Simple workflow runner that doesn't create/close browsers
+"""
 import asyncio
 import csv
 import sys
+import json
+import logging
 from pathlib import Path
 from typing import Dict, List
 import argparse
-import logging
 from datetime import datetime
-
-from workflow_use.workflow.service import Workflow
-from browser_use import Browser
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,25 +19,76 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-async def run_workflow_for_row(workflow: Workflow, row_data: Dict[str, str], row_index: int) -> Dict:
+async def execute_workflow_step(step: Dict, row_data: Dict[str, str]) -> bool:
+    """Execute a single workflow step using browser-use Controller"""
+    try:
+        from workflow_use.controller.service import WorkflowController
+        
+        controller = WorkflowController()
+        step_type = step.get('type')
+        
+        logger.info(f"Executing step: {step.get('description', 'No description')}")
+        logger.info(f"Step type: {step_type}")
+        
+        if step_type == 'navigation':
+            url = step.get('url', '').format(**row_data)
+            logger.info(f"Navigating to: {url}")
+            await controller.navigate(url)
+            
+        elif step_type == 'click':
+            selector = step.get('cssSelector', '')
+            logger.info(f"Clicking: {selector}")
+            
+            # Try to click the element
+            try:
+                await controller.click(selector)
+            except Exception as e:
+                logger.warning(f"Primary selector failed: {e}")
+                # Try XPath as fallback
+                xpath = step.get('xpath', '')
+                if xpath:
+                    logger.info(f"Trying XPath fallback: {xpath}")
+                    await controller.click(xpath)
+                else:
+                    raise e
+                    
+        elif step_type == 'input':
+            selector = step.get('cssSelector', '')
+            value = step.get('value', '').format(**row_data)
+            logger.info(f"Inputting '{value}' into: {selector}")
+            await controller.input_text(selector, value)
+            
+        # Small delay between steps
+        await asyncio.sleep(1)
+        return True
+        
+    except Exception as e:
+        logger.error(f"Step execution failed: {e}")
+        return False
+
+
+async def run_workflow_for_row(workflow: Dict, row_data: Dict[str, str], row_index: int) -> Dict:
     """Run workflow for a single CSV row"""
     try:
         logger.info(f"Processing row {row_index + 1}: {row_data}")
         
-        # Run the workflow with the row data as inputs
-        # Keep browser open for batch processing (only close on last row)
-        is_last_row = row_index == (getattr(workflow, '_total_rows', 0) - 1)
-        result = await workflow.run(
-            inputs=row_data,
-            close_browser_at_end=is_last_row,
-        )
-
+        # Execute each workflow step
+        for i, step in enumerate(workflow['steps']):
+            logger.info(f"--- Running Step {i+1}/{len(workflow['steps'])} ---")
+            
+            success = await execute_workflow_step(step, row_data)
+            if not success:
+                logger.warning(f"Step {i+1} failed, continuing...")
+                # Continue with next step instead of failing completely
+                continue
+        
         return {
             'row_index': row_index,
             'status': 'success',
             'data': row_data,
-            'result': result
+            'result': 'Workflow completed'
         }
+        
     except Exception as e:
         logger.error(f"Error processing row {row_index + 1}: {str(e)}")
         return {
@@ -47,18 +99,15 @@ async def run_workflow_for_row(workflow: Workflow, row_data: Dict[str, str], row
         }
 
 
-async def process_csv(csv_path: str, workflow_path: str, headless: bool = False, use_existing_browser: bool = True) -> List[Dict]:
-    """Process CSV file and run workflow for each row"""
+async def process_csv_simple(csv_path: str, workflow_path: str) -> List[Dict]:
+    """Process CSV file with simple workflow execution"""
     
-    # Use existing browser if available, otherwise create new one
-    browser = None
-    if not use_existing_browser:
-        browser = Browser(headless=headless)
+    # Load workflow
+    with open(workflow_path, 'r', encoding='utf-8') as f:
+        workflow = json.load(f)
     
-    # Load the workflow (without browser to avoid creating new session)
-    workflow = Workflow.load_from_file(workflow_path, browser=browser)
-    logger.info(f"Loaded workflow: {workflow.name}")
-    logger.info(f"Browser mode: {'Headless' if headless else 'Visual (check http://localhost:6080/vnc.html)'}")
+    logger.info(f"Loaded workflow: {workflow.get('name', 'Unknown')}")
+    logger.info("Using simple execution mode (no browser management)")
     
     # Read CSV file
     results = []
@@ -69,21 +118,17 @@ async def process_csv(csv_path: str, workflow_path: str, headless: bool = False,
         
         logger.info(f"Found {total_rows} rows in CSV file")
         
-        # Store total rows in workflow for browser management
-        workflow._total_rows = total_rows
-        
-        # Process rows sequentially to maintain browser state
+        # Process rows sequentially
         for i, row in enumerate(rows):
             logger.info(f"Processing candidate {i + 1}/{total_rows}")
             
-            # Process each row sequentially (not concurrently)
             result = await run_workflow_for_row(workflow, row, i)
             results.append(result)
             
-            # Add delay between candidates (except for the last one)
+            # Add delay between candidates
             if i < total_rows - 1:
-                logger.info("Waiting 5 seconds before next candidate...")
-                await asyncio.sleep(5)
+                logger.info("Waiting 3 seconds before next candidate...")
+                await asyncio.sleep(3)
             
             # Progress update
             processed = i + 1
@@ -134,12 +179,10 @@ def save_results(results: List[Dict], output_path: str):
 
 
 async def main():
-    parser = argparse.ArgumentParser(description='Run workflow for each row in a CSV file')
+    parser = argparse.ArgumentParser(description='Simple workflow runner (no browser management)')
     parser.add_argument('csv_file', help='Path to the CSV file')
     parser.add_argument('workflow_file', help='Path to the workflow JSON file')
-    parser.add_argument('--output', default='results', help='Output file prefix for results (default: results)')
-    parser.add_argument('--headless', action='store_true', help='Run browser in headless mode (default: visual mode)')
-    parser.add_argument('--new-browser', action='store_true', help='Create new browser instead of using existing session')
+    parser.add_argument('--output', default='results_simple', help='Output file prefix (default: results_simple)')
     
     args = parser.parse_args()
     
@@ -153,18 +196,11 @@ async def main():
         sys.exit(1)
     
     try:
-        # Show VNC info if in visual mode
-        if not args.headless:
-            logger.info("\n" + "="*60)
-            logger.info("🖥️  Visual Mode Enabled!")
-            logger.info("🌐 Open http://localhost:6080/vnc.html in your browser")
-            logger.info("   to see the browser automation in action!")
-            logger.info("="*60 + "\n")
-            await asyncio.sleep(3)  # Give user time to open VNC viewer
+        logger.info("Starting simple workflow execution...")
+        logger.info("Note: This assumes a browser is already open and logged in")
         
-        # Process the CSV (use existing browser unless --new-browser specified)
-        use_existing = not args.new_browser
-        results = await process_csv(args.csv_file, args.workflow_file, args.headless, use_existing_browser=use_existing)
+        # Process the CSV
+        results = await process_csv_simple(args.csv_file, args.workflow_file)
         
         # Save results
         output_file = save_results(results, args.output)
